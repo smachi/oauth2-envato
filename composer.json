@@ -1,6 +1,5 @@
 {
 	"name": "smachi/oauth2-envato",
-	"version": "0.1.1-beta.2",
 	"description": "Envato OAuth 2.0 Client Provider for The PHP League OAuth2-Client",
 	"license": "MIT",
 	"authors": [
@@ -24,6 +23,7 @@
 	},
 	"require-dev": {
 	},
+	"minimum-stability": "dev",
 	"autoload": {
 		"psr-4": {
 			"Smachi\\OAuth2\\Client\\": "src/"
