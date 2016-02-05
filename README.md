@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Github Provider for OAuth 2.0 Client
 [![Latest Version](https://img.shields.io/github/release/thephpleague/oauth2-github.svg?style=flat-square)](https://github.com/thephpleague/oauth2-github/releases)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
@@ -127,3 +128,7 @@ Please see [CONTRIBUTING](https://github.com/thephpleague/oauth2-github/blob/mas
 ## License
 
 The MIT License (MIT). Please see [License File](https://github.com/thephpleague/oauth2-github/blob/master/LICENSE) for more information.
+=======
+# oauth2-envato
+Envato Provider for OAuth 2.0 PHPLeague Client
+>>>>>>> bd315b6ef840a1808062b5e863ee56e5805dc000
