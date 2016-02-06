@@ -16,70 +16,80 @@ $provider = new \Smachi\OAuth2\Client\Provider\Envato([
     'redirectUri'       => 'https://example.com/callback-url',
 ]);
 
-if (!isset($_GET['code'])) {
+if ( ! isset( $_GET['code'] ) ) {
 
-    // If we don't have an authorization code then get one
-    $authUrl = $provider->getAuthorizationUrl();
-    $_SESSION['oauth2state'] = $provider->state;
-    header('Location: '.$authUrl);
-    exit;
+	// If we don't have an authorization code then get one
+	$authUrl = $provider->getAuthorizationUrl();
+	$_SESSION['oauth2state'] = $provider->getState();
 
+	return new RedirectResponse( $authUrl );
+
+}
 // Check given state against previously stored one to mitigate CSRF attack
-} elseif (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
+elseif ( empty( $_GET['state'] ) || ( $_GET['state'] !== $_SESSION['oauth2state'] ) ) {
+	unset( $_SESSION['oauth2state'] );
+	exit('Invalid state');
+}
 
-    unset($_SESSION['oauth2state']);
-    exit('Invalid state');
+// Try to get an access token (using the authorization code grant)
+$token = $provider->getAccessToken( 'authorization_code', [
+	'code' => $_GET['code']
+] );
 
-} else {
+try {
 
-    // Try to get an access token (using the authorization code grant)
-    $token = $provider->getAccessToken('authorization_code', [
-        'code' => $_GET['code']
-    ]);
+	// We got an access token, let's now get the user's details
+	$owner           = $provider->getResourceOwner( $token, 'username' );
+	$owner_email     = $provider->getResourceOwner( $token, 'email' );
+	$owner_purchases = $provider->getResourceOwner( $token, 'purchases' );
 
-    // Optional: Now you have a token you can look up a users profile data
-    try {
+	$username    = preg_replace( '/[^a-z0-9-_]/i', '', $owner->getUsername() );
+	$email       = $owner_email->getEmail();
+	$purchases   = $owner_purchases->getPurchases();
+	$author_data = $owner_purchases->getEnvatoAuthor();
 
-        // We got an access token, let's now get the user's details
-        $userDetails = $provider->getUserDetails($token);
+	if ( empty( $purchases ) ) {
+		throw new \Exception(
+			"No purchases made by $username from {$author_data['username']}",
+			401
+		);
+	}
 
-        // Use these details to create a new profile
-        printf('Hello %s!', $userDetails->firstName);
-
-    } catch (Exception $e) {
-
-        // Failed to get user details
-        exit('Oh dear...');
-    }
-
-    // Use this to interact with an API on the users behalf
-    echo $token->accessToken;
+} catch (\Exception $e){
+	die( $e->getMessage() ;)
 }
 ```
 
 
 ## Some Auth User Data
 
-### $provider->getUserDetails($token)
+### $provider->getResourceOwner( $token, 'username' )
 
-User Object:
+Object:
 
 ```
-$user->name
+$user->getUsername()
 
-$user->firstname
-
-$user->lastname
-
-$user->location
-
-$user->imageurl
 ```
 
-### $provider->getUserEmail($token)
-String: the currently logged in user's email address
+### $provider->getResourceOwner( $token, 'email' )
+
+Object:
+
+```
+$user->getEmail()
+
+```
 
 
-### $provider->getScreenName($token)
-String: the currently logged in user's Envato Account username
+### $provider->getResourceOwner( $token, 'purchases' )
+
+Object:
+
+```
+$user->getPurchases()
+
+$user->getEnvatoAuthor()
+
+```
 
