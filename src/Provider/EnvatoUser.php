@@ -1,6 +1,8 @@
 <?php
 namespace Smachi\OAuth2\Client\Provider;
 
+use League\OAuth2\Client\Provider\ResourceOwnerInterface;
+
 class EnvatoUser implements ResourceOwnerInterface {
 
 	/**
@@ -44,31 +46,32 @@ class EnvatoUser implements ResourceOwnerInterface {
 		return $this->response['email'] ?: NULL;
 	}
 
+
 	/**
-	 * Get resource owner name
+	 * Get resource owner username
 	 *
 	 * @return string|null
 	 */
-	public function getName() {
-		return $this->response['name'] ?: NULL;
+	public function getUsername() {
+		return $this->response['username'] ?: NULL;
 	}
 
 	/**
-	 * Get resource owner nickname
+	 * Get resource owner purchases array
 	 *
-	 * @return string|null
+	 * @return array
 	 */
-	public function getNickname() {
-		return $this->response['login'] ?: NULL;
+	public function getPurchases() {
+		return $this->response['purchases'] ?: [];
 	}
 
 	/**
-	 * Get resource owner url
+	 * Get the Envato author data
 	 *
-	 * @return string|null
+	 * @return array
 	 */
-	public function getUrl() {
-		return trim( $this->domain . '/' . $this->getNickname() ) ?: NULL;
+	public function getEnvatoAuthor() {
+		return $this->response['author'] ?: [];
 	}
 
 	/**

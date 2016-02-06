@@ -2,7 +2,7 @@
 
 namespace Smachi\OAuth2\Client\Provider;
 
-use League\OAuth2\Client\Provider\EnvatoUser;
+use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
@@ -40,14 +40,32 @@ class Envato extends AbstractProvider {
 	}
 
 	/**
-	 * Get provider url to fetch user details
+	 * Get provider url to fetch username
 	 *
 	 * @param  AccessToken $token
 	 *
 	 * @return string
 	 */
 	public function getResourceOwnerDetailsUrl( AccessToken $token ) {
-		return "$this->apiDomain/v1/market/user";
+		return "$this->apiDomain/v1/market/private/user/username.json";
+	}
+
+	/**
+	 * Get provider url to fetch user email
+	 *
+	 * @return string
+	 */
+	public function getResourceOwnerEmailUrl() {
+		return "$this->apiDomain/v1/market/private/user/email.json";
+	}
+
+	/**
+	 * Get provider url to fetch user purchases that the authenticated user has made of the app creator's listed items
+	 *
+	 * @return string
+	 */
+	public function getResourceOwnerPurchasesUrl() {
+		return "$this->apiDomain/v3/market/buyer/purchases";
 	}
 
 	/**
@@ -62,10 +80,46 @@ class Envato extends AbstractProvider {
 		return [ ];
 	}
 
+
+	/**
+	 * Requests and returns the resource owner of given access token.
+	 *
+	 * @param  AccessToken $token
+	 * @return ResourceOwnerInterface
+	 */
+	public function getResourceOwner( AccessToken $token, $endpoint ) {
+		$response = $this->fetchResourceOwnerDetails( $token, $endpoint );
+
+		return $this->createResourceOwner( $response, $token );
+	}
+
+
+	protected function fetchResourceOwnerDetails( AccessToken $token, $endpoint ) {
+
+		switch ( $endpoint ) {
+
+			case 'username':
+				$url = $this->getResourceOwnerDetailsUrl( $token );
+		        break;
+
+			case 'email':
+				$url = $this->getResourceOwnerEmailUrl();
+				break;
+
+			case 'purchases':
+				$url = $this->getResourceOwnerPurchasesUrl();
+				break;
+
+		}
+
+		$request = $this->getAuthenticatedRequest( self::METHOD_GET, $url, $token );
+
+		return $this->getResponse( $request );
+	}
+
 	/**
 	 * Check a provider response for errors.
 	 *
-	 * @link   https://developer.github.com/v3/#client-errors
 	 * @throws IdentityProviderException
 	 *
 	 * @param  ResponseInterface $response
@@ -89,7 +143,7 @@ class Envato extends AbstractProvider {
 	 * @param array       $response
 	 * @param AccessToken $token
 	 *
-	 * @return League\OAuth2\Client\Provider\ResourceOwnerInterface
+	 * @return \Smachi\OAuth2\Client\Provider\EnvatoUser
 	 */
 	protected function createResourceOwner( array $response, AccessToken $token ) {
 		$user = new EnvatoUser( $response );
