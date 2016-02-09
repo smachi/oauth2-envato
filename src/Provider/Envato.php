@@ -60,12 +60,22 @@ class Envato extends AbstractProvider {
 	}
 
 	/**
-	 * Get provider url to fetch user purchases that the authenticated user has made of the app creator's listed items
+	 * Get provider url to fetch the user purchases list
 	 *
+	 * @param array $extraParams
 	 * @return string
 	 */
-	public function getResourceOwnerPurchasesUrl() {
-		return "$this->apiDomain/v3/market/buyer/purchases";
+	public function getResourceOwnerPurchasesUrl($extraParams = []) {
+
+		$purchasesEndpoint = "$this->apiDomain/v3/market/buyer/list-purchases";
+
+		if( ! empty( $extraParams['filter_by'] ) && in_array($extraParams['filter_by'], ['wordpress-themes', 'wordpress-plugins']) ){
+			$purchasesEndpoint .= "?filter_by={$extraParams['filter_by']}";
+		}
+
+		// TODO: ALLOW ITEM PAGINATION
+
+		return $purchasesEndpoint;
 	}
 
 	/**
@@ -84,17 +94,28 @@ class Envato extends AbstractProvider {
 	/**
 	 * Requests and returns the resource owner of given access token.
 	 *
-	 * @param  AccessToken $token
+	 * @param AccessToken $token
+	 * @param string $endpoint
+	 * @param array $extraParams
+	 *
 	 * @return ResourceOwnerInterface
 	 */
-	public function getResourceOwner( AccessToken $token, $endpoint ) {
-		$response = $this->fetchResourceOwnerDetails( $token, $endpoint );
+	public function getResourceOwner( AccessToken $token, $endpoint, $extraParams = [] ) {
+		$response = $this->fetchResourceOwnerDetails( $token, $endpoint, $extraParams );
 
 		return $this->createResourceOwner( $response, $token );
 	}
 
-
-	protected function fetchResourceOwnerDetails( AccessToken $token, $endpoint ) {
+	/**
+	 * Requests resource owner details.
+	 *
+	 * @param AccessToken $token
+	 * @param string $endpoint
+	 * @param array $extraParams
+	 *
+	 * @return mixed
+	 */
+	protected function fetchResourceOwnerDetails( AccessToken $token, $endpoint, $extraParams = [] ) {
 
 		switch ( $endpoint ) {
 
@@ -107,7 +128,7 @@ class Envato extends AbstractProvider {
 				break;
 
 			case 'purchases':
-				$url = $this->getResourceOwnerPurchasesUrl();
+				$url = $this->getResourceOwnerPurchasesUrl($extraParams);
 				break;
 
 		}

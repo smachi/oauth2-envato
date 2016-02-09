@@ -62,16 +62,16 @@ class EnvatoUser implements ResourceOwnerInterface {
 	 * @return array
 	 */
 	public function getPurchases() {
-		return $this->response['purchases'] ?: [];
+		return $this->response['results'] ?: [];
 	}
 
 	/**
-	 * Get the Envato author data
+	 * Get resource owner purchases amount
 	 *
 	 * @return array
 	 */
-	public function getEnvatoAuthor() {
-		return $this->response['author'] ?: [];
+	public function getPurchasesCount() {
+		return $this->response['count'] ?: [];
 	}
 
 	/**
